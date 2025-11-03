@@ -8,7 +8,7 @@ contador_pulsos = 0
 tiempo_ultimo_pulso = None
 
 # --- CONFIGURACIÓN ---
-PULSOS_POR_VUELTA = 1          # Ajusta según tu sensor/imán
+PULSOS_POR_VUELTA = 2          # Ajusta según tu sensor/imán
 VENTANA_PROMEDIO = 3          # Número de intervalos usados para promediar
 intervalos = deque(maxlen=VENTANA_PROMEDIO)
 
