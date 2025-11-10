@@ -9,8 +9,9 @@ HALL_PIN = 17
 
 contador_pulsos = 0
 tiempo_ultimo_pulso = None
-PULSOS_POR_VUELTA = 2  # Pulsos por vuelta de la rueda
+PULSOS_POR_VUELTA = 1  # Pulsos por vuelta de la rueda
 VENTANA_PROMEDIO = 3
+FACTOR_BIELA=4
 intervalos = deque(maxlen=VENTANA_PROMEDIO)
 
 # Parámetros físicos
@@ -47,7 +48,8 @@ def registrar_csv(rpm, velocidad, distancia):
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             f"{rpm:.2f}",
             f"{velocidad:.2f}",
-            f"{distancia:.4f}"
+            f"{distancia:.4f}",
+            f"{contador_pulsos:.0f}"
         ])
 
 def registrar_resumen(distancia_total):
@@ -63,6 +65,7 @@ def registrar_resumen(distancia_total):
         writer.writerow(["Fin", hora_fin.strftime("%Y-%m-%d %H:%M:%S")])
         writer.writerow(["Duración (min)", f"{duracion:.2f}"])
         writer.writerow(["Distancia total (km)", f"{distancia_total:.4f}"])
+        writer.writerow(["Pulsos Totales", f"{contador_pulsos:.0f}"])
         writer.writerow([])
 
 def contar_pulso(channel=None):
@@ -70,6 +73,7 @@ def contar_pulso(channel=None):
     global contador_pulsos, tiempo_ultimo_pulso, vueltas_totales, ULTIMO_REGISTRO
     tiempo_actual = time.time()
     contador_pulsos += 1
+    print(f"pulsos: ",{contador_pulsos})
 
     if tiempo_ultimo_pulso is not None:
         intervalo = tiempo_actual - tiempo_ultimo_pulso
@@ -78,7 +82,7 @@ def contar_pulso(channel=None):
         frecuencia_media = 1 / intervalo_medio if intervalo_medio > 0 else 0
 
         # RPM media
-        rpm_media = (frecuencia_media * 60) / PULSOS_POR_VUELTA
+        rpm_media = (frecuencia_media * 60) / (PULSOS_POR_VUELTA*FACTOR_BIELA)
 
         # Velocidad (km/h)
         velocidad_kmh = rpm_media * CIRCUNFERENCIA * 60 / 1000
@@ -110,7 +114,7 @@ def peripheral_setup():
     except Exception:
         pass
 
-    GPIO.add_event_detect(HALL_PIN, GPIO.RISING, callback=contar_pulso, bouncetime=50)
+    GPIO.add_event_detect(HALL_PIN, GPIO.RISING, callback=contar_pulso, bouncetime=100)
 
 def main():
     """Bucle principal."""
